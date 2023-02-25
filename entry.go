@@ -1,7 +1,12 @@
 package geodb
 
-type Entry interface {
-	Key() string
-	IsWithin(Location) bool
-	Center() Location
+func makeEntry(key string, shape Shape) (e entry) {
+	e.key = key
+	e.shape = shape
+	return
+}
+
+type entry struct {
+	key   string
+	shape Shape
 }
