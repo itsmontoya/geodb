@@ -23,7 +23,7 @@ func (l *Location) Distance(inbound Location) (m Meter) {
 	lon := inbound.lon
 	// latH is the haversine value for the latitude
 	latH := getHaversine(lat - l.lat)
-	// longH is the haversin value for the longitude
+	// longH is the haversine value for the longitude
 	lonH := getHaversine(lon-l.lon) * Radian(math.Cos(float64(l.lat))) * Radian(math.Cos(float64(lat)))
 
 	// Square of half the chord length between the points.
