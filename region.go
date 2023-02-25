@@ -1,8 +1,8 @@
 package geodb
 
-func newRegion(e Entry, radius Meter) *Region {
+func newRegion(s Shape, radius Meter) *Region {
 	var r Region
-	r.center = e.Center()
+	r.center = s.Center()
 	r.radius = radius
 	return &r
 }
@@ -13,26 +13,22 @@ type Region struct {
 	// Radius of target coverage in meters
 	radius Meter
 	// Targets within region
-	ts []Entry
+	ts []entry
 }
 
-func (r *Region) insert(entry Entry) (ok bool) {
-	center := entry.Center()
+func (r *Region) insert(e entry) (ok bool) {
+	center := e.shape.Center()
 	if ok = r.isContainedBy(center); !ok {
 		return false
 	}
 
-	r.ts = append(r.ts, entry)
+	r.ts = append(r.ts, e)
 	return true
 }
 
 // isWithinRadius returns whether or not a latitude and longitude are within range
 func (r *Region) isWithinRadius(l Location) bool {
-	if r.center.Distance(l) > r.radius {
-		return false
-	}
-
-	return true
+	return r.center.Distance(l) <= r.radius
 }
 
 // appendMatches will append Matches
@@ -44,13 +40,13 @@ func (r *Region) appendMatches(s []string, l Location) []string {
 
 	// Iterate through all targets
 	for _, entry := range r.ts {
-		if !entry.IsWithin(l) {
+		if !entry.shape.IsWithin(l) {
 			// This target is not within radius, continue
 			continue
 		}
 
 		// Append matching key
-		s = append(s, entry.Key())
+		s = append(s, entry.key)
 	}
 
 	return s
@@ -58,9 +54,5 @@ func (r *Region) appendMatches(s []string, l Location) []string {
 
 // isContainedBy returns whether or not a target is completely contained by a region
 func (r *Region) isContainedBy(center Location) bool {
-	if r.center.Distance(center)+r.radius > r.radius {
-		return false
-	}
-
-	return true
+	return r.center.Distance(center)+r.radius <= r.radius
 }
