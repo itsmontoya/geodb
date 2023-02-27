@@ -18,10 +18,10 @@ func TestGetDistance(t *testing.T) {
 		{
 			name: "Portland to New York",
 			args: args{
-				a: testMakeLocation(testCities["Portland, OR"]),
-				b: testMakeLocation(testCities["New York, NY"]),
+				a: testCities["Portland, OR"].Location(),
+				b: testCities["New York, NY"].Location(),
 			},
-			want: Meter(3.925129057503389e+06),
+			want: Meter(3.9256283176791137e+06),
 		},
 	}
 
