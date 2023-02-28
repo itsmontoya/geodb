@@ -1,4 +1,4 @@
-# geodb [![GoDoc](https://godoc.org/github.com/itsmontoya/geodb?status.svg)](https://godoc.org/github.com/itsmontoya/geodb) ![Status](https://img.shields.io/badge/status-beta-yellow.svg)
+# geodb [![GoDoc](https://godoc.org/github.com/itsmontoya/geodb?status.svg)](https://godoc.org/github.com/itsmontoya/geodb) ![Status](https://img.shields.io/badge/status-beta-yellow.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/itsmontoya/geodb)](https://goreportcard.com/report/github.com/itsmontoya/geodb) ![Go Test Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
 geodb library intended to look up if a lat/long falls within a radius or polygon geofence.
 
