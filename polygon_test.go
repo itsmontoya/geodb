@@ -7,8 +7,7 @@ import (
 
 func TestPolygon_IsWithin(t *testing.T) {
 	type fields struct {
-		locs   []Location
-		center Location
+		locs []Location
 	}
 
 	type args struct {
@@ -55,7 +54,11 @@ func TestPolygon_IsWithin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := NewPolygon(tt.fields.locs, tt.fields.center)
+			p, err := NewPolygon(tt.fields.locs)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			if gotWithin := p.IsWithin(tt.args.l); gotWithin != tt.wantWithin {
 				t.Errorf("Polygon.IsWithin() = %v, want %v", gotWithin, tt.wantWithin)
 			}
@@ -65,7 +68,7 @@ func TestPolygon_IsWithin(t *testing.T) {
 
 func TestPolygon_Center(t *testing.T) {
 	type fields struct {
-		center Location
+		locations []Location
 	}
 
 	tests := []struct {
@@ -76,7 +79,12 @@ func TestPolygon_Center(t *testing.T) {
 		{
 			name: "basic",
 			fields: fields{
-				center: MakeLocation(2, 2),
+				locations: []Location{
+					MakeLocation(0, 0),
+					MakeLocation(0, 4),
+					MakeLocation(4, 4),
+					MakeLocation(4, 0),
+				},
 			},
 			want: MakeLocation(2, 2),
 		},
@@ -84,9 +92,13 @@ func TestPolygon_Center(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := NewPolygon([]Location{}, tt.fields.center)
+			p, err := NewPolygon(tt.fields.locations)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			if got := p.Center(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Polygon.Center() = %v, want %v", got, tt.want)
+				t.Errorf("Polygon.Center() = %v, want %v", got.String(), tt.want.String())
 			}
 		})
 	}
