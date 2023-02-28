@@ -23,8 +23,7 @@ type region struct {
 }
 
 func (r *region) insert(e entry) (ok bool) {
-	center := e.shape.Center()
-	if ok = r.isContainedBy(center); !ok {
+	if ok = r.isContainedBy(e.shape); !ok {
 		return false
 	}
 
@@ -33,8 +32,8 @@ func (r *region) insert(e entry) (ok bool) {
 }
 
 // isContainedBy returns whether or not a target is completely contained by a region
-func (r *region) isContainedBy(center Location) bool {
-	return r.center.Distance(center)+r.radius <= r.radius
+func (r *region) isContainedBy(s Shape) bool {
+	return r.center.Distance(s.Center())+s.Radius() <= r.radius
 }
 
 // isWithinRadius returns whether or not a latitude and longitude are within range
