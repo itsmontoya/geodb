@@ -24,3 +24,7 @@ func (r *Radius) IsWithin(l Location) bool {
 func (r *Radius) Center() Location {
 	return r.Location
 }
+
+func (r *Radius) Radius() Meter {
+	return r.radius
+}

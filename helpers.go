@@ -34,3 +34,31 @@ func toPoints(locs []Location) (points []pip.Point) {
 
 	return
 }
+
+func getCorners(locs []Location) (lowLat, highLat, lowLon, highLon Degree) {
+	first := locs[0]
+	lowLat = first.lat.toDegrees()
+	highLat = lowLat
+	lowLon = first.lon.toDegrees()
+	highLon = lowLon
+
+	for _, loc := range locs {
+		lat := loc.lat.toDegrees()
+		switch {
+		case lat < lowLat:
+			lowLat = lat
+		case lat > highLat:
+			highLat = lat
+		}
+
+		lon := loc.lon.toDegrees()
+		switch {
+		case lon < lowLon:
+			lowLon = lon
+		case lon > highLon:
+			highLon = lon
+		}
+	}
+
+	return
+}

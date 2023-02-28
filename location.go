@@ -1,6 +1,14 @@
 package geodb
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
+
+func NewLocation(lat, lon Degree) *Location {
+	l := MakeLocation(lat, lon)
+	return &l
+}
 
 // MakeLocation will return a new location
 func MakeLocation(lat, lon Degree) Location {
@@ -31,4 +39,8 @@ func (l *Location) Distance(inbound Location) (m Meter) {
 	// Angular distance of Radians
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	return Meter(earthRadius * c)
+}
+
+func (l *Location) String() string {
+	return fmt.Sprintf("Lat: %f / Lon: %f", l.lat.toDegrees(), l.lon.toDegrees())
 }
