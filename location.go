@@ -5,6 +5,11 @@ import (
 	"math"
 )
 
+func NewLocation(lat, lon Degree) *Location {
+	l := MakeLocation(lat, lon)
+	return &l
+}
+
 // MakeLocation will return a new location
 func MakeLocation(lat, lon Degree) Location {
 	return Location{
