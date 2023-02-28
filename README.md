@@ -29,7 +29,10 @@ import (
 
 func main() {
 	gt := New(1)
-	gt.Insert("Portland", 45.5231, 122.6765, 1000 * 15) // 15km radius
-	fmt.Println(gt.Matches(45.4312, 122.7715))
+	loc := MakeLocation(45.5231, 122.6765)
+	shape := NewRadius(1000 * 15, loc)
+	gt.Insert("Portland",) // 15km radius
+	matchLoc := MakeLocation(45.4312, 122.7715)
+	fmt.Println(gt.GetMatches(matchLoc))
 }
 ```
