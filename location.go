@@ -1,6 +1,7 @@
 package geodb
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 )
@@ -24,6 +25,26 @@ type Location struct {
 	lat Radian
 	// Longitude in Radians
 	lon Radian
+}
+
+func (l *Location) MarshalJSON() (bs []byte, err error) {
+	return json.Marshal(l.Coordinates())
+}
+
+func (l *Location) UnmarshalJSON(bs []byte) (err error) {
+	var c Coordinates
+	if err = json.Unmarshal(bs, &c); err != nil {
+		return
+	}
+
+	*l = c.Location()
+	return
+}
+
+func (l *Location) Coordinates() (c Coordinates) {
+	c.Latitude = l.lat.toDegrees()
+	c.Longitude = l.lon.toDegrees()
+	return
 }
 
 func (l *Location) Distance(inbound Location) (m Meter) {
