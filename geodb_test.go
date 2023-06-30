@@ -35,8 +35,10 @@ func TestNew(t *testing.T) {
 				regionSize: 3000,
 			},
 			want: &GeoDB{
-				regionSize: 3000,
-				rs:         nil,
+				s: store{
+					regionSize: 3000,
+					rs:         nil,
+				},
 			},
 		},
 	}
@@ -98,8 +100,10 @@ func TestGeoDB_Insert(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &GeoDB{
-				regionSize: tt.fields.regionSize,
-				rs:         tt.fields.rs,
+				s: store{
+					regionSize: tt.fields.regionSize,
+					rs:         tt.fields.rs,
+				},
 			}
 
 			err := g.Insert(tt.args.key, tt.args.shape)
@@ -244,8 +248,10 @@ func TestGeoDB_GetMatches(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &GeoDB{
-				regionSize: tt.fields.regionSize,
-				rs:         tt.fields.rs,
+				s: store{
+					regionSize: tt.fields.regionSize,
+					rs:         tt.fields.rs,
+				},
 			}
 
 			gotMatches, err := g.GetMatches(tt.args.l)
@@ -291,8 +297,10 @@ func TestGeoDB_RegionsLen(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &GeoDB{
-				regionSize: tt.fields.regionSize,
-				rs:         tt.fields.rs,
+				s: store{
+					regionSize: tt.fields.regionSize,
+					rs:         tt.fields.rs,
+				},
 			}
 
 			gotN, err := g.RegionsLen()
@@ -355,8 +363,10 @@ func TestGeoDB_EntriesLen(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &GeoDB{
-				regionSize: tt.fields.regionSize,
-				rs:         tt.fields.rs,
+				s: store{
+					regionSize: tt.fields.regionSize,
+					rs:         tt.fields.rs,
+				},
 			}
 
 			gotN, err := g.EntriesLen()
