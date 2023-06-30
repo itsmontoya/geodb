@@ -53,6 +53,10 @@ func (g *GeoDB) EntriesLen() (n int, err error) {
 	return g.s.EntriesLen()
 }
 
+// Transaction will create a fresh database transaction to insert and populate.
+// If the called function returns an error, the database will not be updated.
+// If the called function returns no error, the database will be updated with
+// newly populated Transaction store
 func (g *GeoDB) Transaction(fn func(txn Transaction) error) (err error) {
 	var s store
 	s.regionSize = g.RegionSize()
