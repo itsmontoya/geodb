@@ -7,85 +7,65 @@ import (
 // New returns a new GeoDB
 func New(regionSize Meter) *GeoDB {
 	var db GeoDB
-	db.regionSize = regionSize
+	db.s.regionSize = regionSize
 	return &db
 }
 
 // GeoDB maanges the GeoDB service
 type GeoDB struct {
 	mux sync.RWMutex
-
-	// region size
-	regionSize Meter
-	// Internal region store
-	rs []*region
+	s   store
 }
 
 // Insert will insert a location to the tree
 func (g *GeoDB) Insert(key string, shape Shape) (err error) {
 	g.mux.Lock()
 	defer g.mux.Unlock()
-	e := makeEntry(key, shape)
-	g.insert(e)
-	return
+	return g.s.Insert(key, shape)
 }
 
 // GetMatches will return the matching location keys for the provided latitude and longitude
 func (g *GeoDB) GetMatches(l Location) (matches []string, err error) {
 	g.mux.RLock()
 	defer g.mux.RUnlock()
-	return g.getMatches(l), nil
+	return g.s.GetMatches(l)
+}
+
+// RegionsLen will return the number of regions
+func (g *GeoDB) RegionSize() (sz Meter) {
+	g.mux.RLock()
+	defer g.mux.RUnlock()
+	sz = g.s.regionSize
+	return
 }
 
 // RegionsLen will return the number of regions
 func (g *GeoDB) RegionsLen() (n int, err error) {
 	g.mux.RLock()
 	defer g.mux.RUnlock()
-	return len(g.rs), nil
+	return g.s.RegionsLen()
 }
 
 // EntriesLen will return the number of targets
 func (g *GeoDB) EntriesLen() (n int, err error) {
 	g.mux.RLock()
 	defer g.mux.RUnlock()
-	for _, r := range g.rs {
-		n += len(r.ts)
-	}
-
-	return
+	return g.s.EntriesLen()
 }
 
-// insert will insert a location to the tree
-func (g *GeoDB) insert(e entry) {
-	if g.tryInsert(e) {
+// Transaction will create a fresh database transaction to insert and populate.
+// If the called function returns an error, the database will not be updated.
+// If the called function returns no error, the database will be updated with
+// newly populated Transaction store
+func (g *GeoDB) Transaction(fn func(txn Transaction) error) (err error) {
+	var s store
+	s.regionSize = g.RegionSize()
+	if err = fn(&s); err != nil {
 		return
 	}
 
-	g.createRegion(e)
-}
-
-// insert will insert a location to the tree
-func (g *GeoDB) tryInsert(e entry) (inserted bool) {
-	for _, r := range g.rs {
-		if r.insert(e) {
-			inserted = true
-		}
-	}
-
-	return
-}
-
-// Insert will insert a location to the tree
-func (g *GeoDB) createRegion(e entry) {
-	// No matches were found, so we must create a new region
-	r := newRegionFromEntry(e, g.regionSize)
-	g.rs = append(g.rs, r)
-}
-
-func (g *GeoDB) getMatches(l Location) (matches []string) {
-	for _, r := range g.rs {
-		matches = r.appendMatches(matches, l)
-	}
-
+	g.mux.Lock()
+	defer g.mux.Unlock()
+	g.s = s
 	return
 }
