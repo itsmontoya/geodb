@@ -267,6 +267,110 @@ func TestGeoDB_GetMatches(t *testing.T) {
 	}
 }
 
+func TestGeoDB_GetMatches_poly(t *testing.T) {
+	type fields struct {
+		locs []Location
+	}
+
+	type args struct {
+		l Location
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+
+		wantMatch bool
+		wantErr   bool
+	}{
+		{
+			name: "match",
+			fields: fields{
+				locs: []Location{
+					MakeLocation(0, 0),
+					MakeLocation(0, 4),
+					MakeLocation(4, 4),
+					MakeLocation(4, 0),
+				},
+			},
+			args: args{
+				l: MakeLocation(2, 2),
+			},
+			wantMatch: true,
+		},
+		{
+			name: "no match",
+			fields: fields{
+				locs: []Location{
+					MakeLocation(0, 0),
+					MakeLocation(0, 4),
+					MakeLocation(4, 4),
+					MakeLocation(4, 0),
+				},
+			},
+			args: args{
+				l: MakeLocation(6, 2),
+			},
+			wantMatch: false,
+		},
+		{
+			name: "Triangle - Match",
+			fields: fields{
+				locs: []Location{
+					MakeLocation(32.7933, -97.1566),
+					MakeLocation(32.6540, -97.2686),
+					MakeLocation(32.7848, -97.4444),
+				},
+			},
+			args: args{
+				l: MakeLocation(32.7450, -97.3582),
+			},
+			wantMatch: true,
+		},
+		{
+			name: "Triangle - No match",
+			fields: fields{
+				locs: []Location{
+					MakeLocation(32.7933, -97.1566),
+					MakeLocation(32.6540, -97.2686),
+					MakeLocation(32.7848, -97.4444),
+				},
+			},
+			args: args{
+				l: MakeLocation(32.6714, -97.3193),
+			},
+			wantMatch: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := New(3000)
+			p, err := NewPolygon(tt.fields.locs)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if err := db.Insert("test_0", p); err != nil {
+				t.Fatal(err)
+			}
+
+			gotMatches, err := db.GetMatches(tt.args.l)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GeoDB.GetMatches() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantMatch && len(gotMatches) == 0 {
+				t.Errorf("wanted match and got no match")
+			} else if !tt.wantMatch && len(gotMatches) > 0 {
+				t.Errorf("wanted no match and got match")
+			}
+		})
+	}
+}
+
 func TestGeoDB_RegionsLen(t *testing.T) {
 	type fields struct {
 		// region size

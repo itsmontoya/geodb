@@ -121,6 +121,34 @@ func TestPolygon_IsWithin(t *testing.T) {
 			},
 			wantWithin: false,
 		},
+		{
+			name: "Triangle - Match",
+			fields: fields{
+				locs: []Location{
+					MakeLocation(32.7933, -97.1566),
+					MakeLocation(32.6540, -97.2686),
+					MakeLocation(32.7848, -97.4444),
+				},
+			},
+			args: args{
+				l: MakeLocation(32.7450, -97.3582),
+			},
+			wantWithin: true,
+		},
+		{
+			name: "Triangle - No match",
+			fields: fields{
+				locs: []Location{
+					MakeLocation(32.7933, -97.1566),
+					MakeLocation(32.6540, -97.2686),
+					MakeLocation(32.7848, -97.4444),
+				},
+			},
+			args: args{
+				l: MakeLocation(32.6714, -97.3193),
+			},
+			wantWithin: false,
+		},
 	}
 
 	for _, tt := range tests {
