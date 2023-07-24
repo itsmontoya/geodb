@@ -3,7 +3,11 @@ package geodb
 func newRegion(s Shape, radius Meter) *region {
 	var r region
 	r.center = s.Center()
-	r.radius = radius
+	r.radius = s.Radius()
+	if radius > r.radius {
+		r.radius = radius
+	}
+
 	return &r
 }
 
