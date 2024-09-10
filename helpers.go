@@ -20,9 +20,26 @@ func GetDistance(a, b Location) Unit {
 	return a.Distance(b)
 }
 
-// getHaversine will return a haversine value from a provided delta
-func getHaversine(delta Radian) Radian {
-	return Radian(math.Pow(math.Sin((float64(delta))/2), 2))
+// getHaversine calculates the angular distance between two points on a sphere
+// given their latitudes and the differences in their latitudes and longitudes.
+// Parameters:
+//
+//	latA, latB: Latitudes of the two points in radians.
+//	deltaLat: Difference in latitude between the two points in radians.
+//	deltaLon: Difference in longitude between the two points in radians.
+//
+// Returns:
+//
+//	The angular distance in radians.
+func getHaversine(latA, latB, deltaLat, deltaLon Radian) Radian {
+	// Central angle component used to compute the angular distance
+	centralAngleComponent := math.Pow(math.Sin(float64(deltaLat)/2), 2) +
+		math.Cos(float64(latA))*math.Cos(float64(latB))*
+			math.Pow(math.Sin(float64(deltaLon)/2), 2)
+
+	// Calculate the angular distance in radians
+	angularDistance := 2 * math.Atan2(math.Sqrt(centralAngleComponent), math.Sqrt(1-centralAngleComponent))
+	return Radian(angularDistance)
 }
 
 func toPoints(locs []Location) (points []pip.Point) {
