@@ -3,7 +3,6 @@ package geodb
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 )
 
 func NewLocation(lat, lon Degree) *Location {
@@ -47,19 +46,17 @@ func (l *Location) Coordinates() (c Coordinates) {
 	return
 }
 
+// Distance calculates the great-circle distance between two locations.
 func (l *Location) Distance(inbound Location) (m Meter) {
-	lat := inbound.lat
-	lon := inbound.lon
-	// latH is the haversine value for the latitude
-	latH := getHaversine(lat - l.lat)
-	// longH is the haversine value for the longitude
-	lonH := getHaversine(lon-l.lon) * Radian(math.Cos(float64(l.lat))) * Radian(math.Cos(float64(lat)))
+	// Calculate differences in latitude and longitude
+	deltaLat := inbound.lat - l.lat
+	deltaLon := inbound.lon - l.lon
 
-	// Square of half the chord length between the points.
-	a := float64(latH + lonH)
-	// Angular distance of Radians
-	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-	return Meter(earthRadius * c)
+	// Use the getHaversine function to calculate the angular distance
+	angularDistance := getHaversine(l.lat, inbound.lat, deltaLat, deltaLon)
+
+	// Calculate the distance in meters
+	return Meter(earthRadius * angularDistance)
 }
 
 func (l *Location) String() string {
