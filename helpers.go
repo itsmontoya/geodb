@@ -42,39 +42,10 @@ func getHaversine(latA, latB, deltaLat, deltaLon Radian) Radian {
 	return Radian(angularDistance)
 }
 
-func toPoints(locs []Location) (points []pip.Point) {
-	points = make([]pip.Point, 0, len(locs))
-	for _, a := range locs {
-		point := pip.MakePoint(float64(a.lon.toDegrees()), float64(a.lat.toDegrees()))
-		points = append(points, point)
-	}
-
-	return
-}
-
-func getCorners(locs []Location) (lowLat, highLat, lowLon, highLon Degree) {
-	first := locs[0]
-	lowLat = first.lat.toDegrees()
-	highLat = lowLat
-	lowLon = first.lon.toDegrees()
-	highLon = lowLon
-
-	for _, loc := range locs {
-		lat := loc.lat.toDegrees()
-		switch {
-		case lat < lowLat:
-			lowLat = lat
-		case lat > highLat:
-			highLat = lat
-		}
-
-		lon := loc.lon.toDegrees()
-		switch {
-		case lon < lowLon:
-			lowLon = lon
-		case lon > highLon:
-			highLon = lon
-		}
+func toPoints(cs []Coordinates) (points []pip.Point) {
+	points = make([]pip.Point, 0, len(cs))
+	for _, c := range cs {
+		points = append(points, c.toPoint())
 	}
 
 	return
