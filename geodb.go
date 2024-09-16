@@ -5,52 +5,51 @@ import (
 )
 
 // New returns a new GeoDB
-func New(regionSize Meter) *GeoDB {
+func New() *GeoDB {
 	var db GeoDB
-	db.s.regionSize = regionSize
 	return &db
 }
 
 // GeoDB maanges the GeoDB service
 type GeoDB struct {
-	mux sync.RWMutex
-	s   store
+	mux   sync.RWMutex
+	trunk trunk
+	count int
 }
 
 // Insert will insert a location to the tree
-func (g *GeoDB) Insert(key string, shape Shape) (err error) {
+func (g *GeoDB) Insert(key string, shape Shape) {
 	g.mux.Lock()
 	defer g.mux.Unlock()
-	return g.s.Insert(key, shape)
+	g.trunk.Insert(key, shape)
+	g.count++
+
+	if g.trunk.Len() <= 8 {
+		return
+	}
+
+	g.trunk.nodes = g.trunk.Split()
 }
 
 // GetMatches will return the matching location keys for the provided latitude and longitude
-func (g *GeoDB) GetMatches(l Location) (matches []string, err error) {
+func (g *GeoDB) GetMatches(c Coordinates) (matches []string) {
 	g.mux.RLock()
 	defer g.mux.RUnlock()
-	return g.s.GetMatches(l)
-}
+	es := g.trunk.AppendMatches(nil, c)
+	matches = make([]string, 0, len(es))
+	for _, e := range es {
+		matches = append(matches, e.key)
+	}
 
-// RegionsLen will return the number of regions
-func (g *GeoDB) RegionSize() (sz Meter) {
-	g.mux.RLock()
-	defer g.mux.RUnlock()
-	sz = g.s.regionSize
 	return
 }
 
-// RegionsLen will return the number of regions
-func (g *GeoDB) RegionsLen() (n int, err error) {
-	g.mux.RLock()
-	defer g.mux.RUnlock()
-	return g.s.RegionsLen()
-}
-
 // EntriesLen will return the number of targets
-func (g *GeoDB) EntriesLen() (n int, err error) {
+func (g *GeoDB) Len() (n int) {
 	g.mux.RLock()
 	defer g.mux.RUnlock()
-	return g.s.EntriesLen()
+	n = g.count
+	return
 }
 
 // Transaction will create a fresh database transaction to insert and populate.
@@ -58,14 +57,14 @@ func (g *GeoDB) EntriesLen() (n int, err error) {
 // If the called function returns no error, the database will be updated with
 // newly populated Transaction store
 func (g *GeoDB) Transaction(fn func(txn Transaction) error) (err error) {
-	var s store
-	s.regionSize = g.RegionSize()
-	if err = fn(&s); err != nil {
+	var t trunk
+
+	if err = fn(&t); err != nil {
 		return
 	}
 
 	g.mux.Lock()
 	defer g.mux.Unlock()
-	g.s = s
+	g.trunk = t
 	return
 }
