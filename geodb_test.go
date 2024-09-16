@@ -190,7 +190,7 @@ func TestGeoDB_GetMatches(t *testing.T) {
 			wantErr:     false,
 		},
 		{
-			name: "many points",
+			name: "many points, 0_0",
 			fields: fields{
 				es: makeTestPolys(30, 30),
 			},
@@ -198,6 +198,28 @@ func TestGeoDB_GetMatches(t *testing.T) {
 				c: MakeCoordinates(0, 0),
 			},
 			wantMatches: []string{"0_0"},
+			wantErr:     false,
+		},
+		{
+			name: "many points, 28_17",
+			fields: fields{
+				es: makeTestPolys(30, 30),
+			},
+			args: args{
+				c: MakeCoordinates(28.5, 17.5),
+			},
+			wantMatches: []string{"28_17"},
+			wantErr:     false,
+		},
+		{
+			name: "many points, 28_17 (bordered)",
+			fields: fields{
+				es: makeTestPolys(30, 30),
+			},
+			args: args{
+				c: MakeCoordinates(28, 17),
+			},
+			wantMatches: []string{"27_16", "27_17", "28_16", "28_17"},
 			wantErr:     false,
 		},
 	}
