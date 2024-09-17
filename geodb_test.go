@@ -222,6 +222,28 @@ func TestGeoDB_GetMatches(t *testing.T) {
 			wantMatches: []string{"27_16", "27_17", "28_16", "28_17"},
 			wantErr:     false,
 		},
+		{
+			name: "many points, 98_98 (bordered)",
+			fields: fields{
+				es: makeTestPolys(100, 100),
+			},
+			args: args{
+				c: MakeCoordinates(98, 98),
+			},
+			wantMatches: []string{"98_97", "98_98", "97_97", "97_98"},
+			wantErr:     false,
+		},
+		{
+			name: "many points, 0_0 (bordered)",
+			fields: fields{
+				es: makeTestPolys(100, 100),
+			},
+			args: args{
+				c: MakeCoordinates(0, 0),
+			},
+			wantMatches: []string{"0_0"},
+			wantErr:     false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -229,6 +251,20 @@ func TestGeoDB_GetMatches(t *testing.T) {
 			g := New()
 			for _, e := range tt.fields.es {
 				g.Insert(e.key, e.shape)
+			}
+
+			for _, e := range tt.fields.es {
+				rect := e.Rect()
+				loc := rect.Center()
+				ms := g.GetMatches(loc.Coordinates())
+				if len(ms) == 0 {
+					t.Fatalf("No matches for %s", e.key)
+				}
+
+				match := ms[0]
+				if match != e.key {
+					t.Fatalf("Invalid match, want %s and received %s", e.key, match)
+				}
 			}
 
 			gotMatches := g.GetMatches(tt.args.c)
