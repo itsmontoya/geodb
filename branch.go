@@ -4,14 +4,6 @@ import "fmt"
 
 var _ node = &branch{}
 
-const (
-	branchHasLeaves branchState = iota
-	branchChildrenHasLeaves
-	branchChildrenHasBranches
-)
-
-type branchState uint8
-
 type branch struct {
 	rect  Rect
 	nodes []node
@@ -19,22 +11,11 @@ type branch struct {
 	state branchState
 }
 
+func (b *branch) Append(n node) {
+	b.nodes = append(b.nodes, n)
+}
+
 func (b *branch) Insert(v value) {
-	switch b.state {
-	case branchHasLeaves:
-		if n, ok := v.(*leaf); ok {
-			b.nodes = append(b.nodes, n)
-			return
-		}
-
-	case branchChildrenHasLeaves:
-		if n, ok := v.(*branch); ok {
-			b.nodes = append(b.nodes, n)
-			return
-		}
-
-	}
-
 	rect := v.Rect()
 	match, i := b.getMatch(&rect)
 	match.Insert(v)
@@ -65,7 +46,7 @@ func (b *branch) Split() (out []node) {
 			panic(msg)
 		}
 
-		node.Insert(n)
+		node.Append(n)
 	}
 
 	out = append(out, &b1)
@@ -88,14 +69,9 @@ func (b *branch) getMatch(rect *Rect) (match node, index int) {
 		isSet    bool
 	)
 
-	switch {
-	case len(b.nodes) > 0:
-	case b.state == branchHasLeaves:
+	if len(b.nodes) == 0 {
 		var l leaf
 		b.nodes = append(b.nodes, &l)
-	default:
-		var b branch
-		b.nodes = append(b.nodes, &b)
 	}
 
 	c := rect.Center()
