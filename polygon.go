@@ -9,46 +9,40 @@ import (
 var _ Shape = &Polygon{}
 
 // NewPolygon will return a new poly target
-func NewPolygon(locs []Location) (pp *Polygon, err error) {
-	if len(locs) < 3 {
-		err = fmt.Errorf("invalid number of locations, have <%d> and need a minimum of <3>", len(locs))
+func NewPolygon(coords []Coordinates) (pp *Polygon, err error) {
+	if len(coords) < 3 {
+		err = fmt.Errorf("invalid number of coordinates, have <%d> and need a minimum of <3>", len(coords))
 		return
 	}
 
 	var p Polygon
-	p.polygon = pip.New(toPoints(locs))
-	p.setReferencePoints(locs)
+	p.border = coords
+	p.polygon = pip.New(toPoints(coords))
+	p.setRect()
 	return &p, nil
 }
 
 // Polygon is a polygon target
 type Polygon struct {
+	border  []Coordinates
 	polygon *pip.Polygon
-	center  Location
-	radius  Meter
+	rect    Rect
 }
 
 // IsWithin will return whether ot not a point at a given lat and lon are within a poly target
-func (p *Polygon) IsWithin(l Location) (within bool) {
-	x := float64(l.lon.toDegrees())
-	y := float64(l.lat.toDegrees())
+func (p *Polygon) IsWithin(c Coordinates) (within bool) {
+	x := float64(c.Longitude)
+	y := float64(c.Latitude)
 	point := pip.MakePoint(x, y)
 	return p.polygon.IsWithin(point)
 }
 
-func (p *Polygon) Center() Location {
-	return p.center
+func (p *Polygon) Rect() Rect {
+	return p.rect
 }
 
-func (p *Polygon) Radius() Meter {
-	return p.radius
-}
-
-func (p *Polygon) setReferencePoints(locs []Location) {
-	lowLat, highLat, lowLon, highLon := getCorners(locs)
-	centerLat := (highLat + lowLat) / 2
-	centerLon := (highLon + lowLon) / 2
-	p.center = MakeLocation(centerLat, centerLon)
-	furthestPoint := MakeLocation(lowLat, lowLon)
-	p.radius = p.center.Distance(furthestPoint)
+func (p *Polygon) setRect() {
+	for _, coords := range p.border {
+		p.rect.SetCoords(coords)
+	}
 }

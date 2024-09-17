@@ -1,13 +1,12 @@
 package geodb
 
 import (
-	"reflect"
 	"testing"
 )
 
 func TestNewPolygon(t *testing.T) {
 	type args struct {
-		locs []Location
+		coords []Coordinates
 	}
 	tests := []struct {
 		name    string
@@ -17,11 +16,11 @@ func TestNewPolygon(t *testing.T) {
 		{
 			name: "four locations",
 			args: args{
-				locs: []Location{
-					MakeLocation(0, 0),
-					MakeLocation(0, 4),
-					MakeLocation(4, 4),
-					MakeLocation(4, 0),
+				coords: []Coordinates{
+					MakeCoordinates(0, 0),
+					MakeCoordinates(0, 4),
+					MakeCoordinates(4, 4),
+					MakeCoordinates(4, 0),
 				},
 			},
 			wantErr: false,
@@ -29,10 +28,10 @@ func TestNewPolygon(t *testing.T) {
 		{
 			name: "three locations",
 			args: args{
-				locs: []Location{
-					MakeLocation(0, 0),
-					MakeLocation(0, 4),
-					MakeLocation(4, 4),
+				coords: []Coordinates{
+					MakeCoordinates(0, 0),
+					MakeCoordinates(0, 4),
+					MakeCoordinates(4, 4),
 				},
 			},
 			wantErr: false,
@@ -40,9 +39,9 @@ func TestNewPolygon(t *testing.T) {
 		{
 			name: "two locations",
 			args: args{
-				locs: []Location{
-					MakeLocation(0, 0),
-					MakeLocation(0, 4),
+				coords: []Coordinates{
+					MakeCoordinates(0, 0),
+					MakeCoordinates(0, 4),
 				},
 			},
 			wantErr: true,
@@ -50,8 +49,8 @@ func TestNewPolygon(t *testing.T) {
 		{
 			name: "one location",
 			args: args{
-				locs: []Location{
-					MakeLocation(0, 0),
+				coords: []Coordinates{
+					MakeCoordinates(0, 0),
 				},
 			},
 			wantErr: true,
@@ -59,7 +58,7 @@ func TestNewPolygon(t *testing.T) {
 		{
 			name: "empty",
 			args: args{
-				locs: []Location{},
+				coords: []Coordinates{},
 			},
 			wantErr: true,
 		},
@@ -67,7 +66,7 @@ func TestNewPolygon(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewPolygon(tt.args.locs)
+			_, err := NewPolygon(tt.args.coords)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewPolygon() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -78,11 +77,11 @@ func TestNewPolygon(t *testing.T) {
 
 func TestPolygon_IsWithin(t *testing.T) {
 	type fields struct {
-		locs []Location
+		coords []Coordinates
 	}
 
 	type args struct {
-		l Location
+		c Coordinates
 	}
 
 	tests := []struct {
@@ -94,58 +93,58 @@ func TestPolygon_IsWithin(t *testing.T) {
 		{
 			name: "match",
 			fields: fields{
-				locs: []Location{
-					MakeLocation(0, 0),
-					MakeLocation(0, 4),
-					MakeLocation(4, 4),
-					MakeLocation(4, 0),
+				coords: []Coordinates{
+					MakeCoordinates(0, 0),
+					MakeCoordinates(0, 4),
+					MakeCoordinates(4, 4),
+					MakeCoordinates(4, 0),
 				},
 			},
 			args: args{
-				l: MakeLocation(2, 2),
+				c: MakeCoordinates(2, 2),
 			},
 			wantWithin: true,
 		},
 		{
 			name: "no match",
 			fields: fields{
-				locs: []Location{
-					MakeLocation(0, 0),
-					MakeLocation(0, 4),
-					MakeLocation(4, 4),
-					MakeLocation(4, 0),
+				coords: []Coordinates{
+					MakeCoordinates(0, 0),
+					MakeCoordinates(0, 4),
+					MakeCoordinates(4, 4),
+					MakeCoordinates(4, 0),
 				},
 			},
 			args: args{
-				l: MakeLocation(6, 2),
+				c: MakeCoordinates(6, 2),
 			},
 			wantWithin: false,
 		},
 		{
 			name: "Triangle - Match",
 			fields: fields{
-				locs: []Location{
-					MakeLocation(32.7933, -97.1566),
-					MakeLocation(32.6540, -97.2686),
-					MakeLocation(32.7848, -97.4444),
+				coords: []Coordinates{
+					MakeCoordinates(32.7933, -97.1566),
+					MakeCoordinates(32.6540, -97.2686),
+					MakeCoordinates(32.7848, -97.4444),
 				},
 			},
 			args: args{
-				l: MakeLocation(32.7450, -97.3582),
+				c: MakeCoordinates(32.7450, -97.3582),
 			},
 			wantWithin: true,
 		},
 		{
 			name: "Triangle - No match",
 			fields: fields{
-				locs: []Location{
-					MakeLocation(32.7933, -97.1566),
-					MakeLocation(32.6540, -97.2686),
-					MakeLocation(32.7848, -97.4444),
+				coords: []Coordinates{
+					MakeCoordinates(32.7933, -97.1566),
+					MakeCoordinates(32.6540, -97.2686),
+					MakeCoordinates(32.7848, -97.4444),
 				},
 			},
 			args: args{
-				l: MakeLocation(32.6714, -97.3193),
+				c: MakeCoordinates(32.6714, -97.3193),
 			},
 			wantWithin: false,
 		},
@@ -153,89 +152,13 @@ func TestPolygon_IsWithin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p, err := NewPolygon(tt.fields.locs)
+			p, err := NewPolygon(tt.fields.coords)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if gotWithin := p.IsWithin(tt.args.l); gotWithin != tt.wantWithin {
+			if gotWithin := p.IsWithin(tt.args.c); gotWithin != tt.wantWithin {
 				t.Errorf("Polygon.IsWithin() = %v, want %v", gotWithin, tt.wantWithin)
-			}
-		})
-	}
-}
-
-func TestPolygon_Center(t *testing.T) {
-	type fields struct {
-		locations []Location
-	}
-
-	tests := []struct {
-		name   string
-		fields fields
-		want   Location
-	}{
-		{
-			name: "basic",
-			fields: fields{
-				locations: []Location{
-					MakeLocation(0, 0),
-					MakeLocation(0, 4),
-					MakeLocation(4, 4),
-					MakeLocation(4, 0),
-				},
-			},
-			want: MakeLocation(2, 2),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p, err := NewPolygon(tt.fields.locations)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if got := p.Center(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Polygon.Center() = %v, want %v", got.String(), tt.want.String())
-			}
-		})
-	}
-}
-
-func TestPolygon_Radius(t *testing.T) {
-	type fields struct {
-		locations []Location
-	}
-
-	tests := []struct {
-		name   string
-		fields fields
-		want   Meter
-	}{
-		{
-			name: "basic",
-			fields: fields{
-				locations: []Location{
-					MakeLocation(0, 0),
-					MakeLocation(0, 4),
-					MakeLocation(4, 4),
-					MakeLocation(4, 0),
-				},
-			},
-			want: NewLocation(2, 2).Distance(MakeLocation(0, 0)),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p, err := NewPolygon(tt.fields.locations)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if got := p.Radius(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Polygon.Center() = %v, want %v", got, tt.want)
 			}
 		})
 	}

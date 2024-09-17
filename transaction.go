@@ -1,5 +1,5 @@
 package geodb
 
 type Transaction interface {
-	Insert(key string, shape Shape) error
+	Insert(key string, shape Shape)
 }

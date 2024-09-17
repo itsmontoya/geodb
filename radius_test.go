@@ -59,7 +59,7 @@ func TestRadius_IsWithin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := NewRadius(tt.fields.radius, tt.fields.center)
-			if gotWithin := p.IsWithin(tt.args.l); gotWithin != tt.wantWithin {
+			if gotWithin := p.IsWithin(tt.args.l.Coordinates()); gotWithin != tt.wantWithin {
 				t.Errorf("Radius.IsWithin() = %v, want %v", gotWithin, tt.wantWithin)
 			}
 		})
