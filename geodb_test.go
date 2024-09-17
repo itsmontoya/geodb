@@ -7,6 +7,8 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/gdbu/stringset"
 )
 
 var testCities map[string]*Coordinates
@@ -186,62 +188,73 @@ func TestGeoDB_GetMatches(t *testing.T) {
 			args: args{
 				c: *testCities["Seattle, WA"],
 			},
-			wantMatches: nil,
+			wantMatches: []string{},
 			wantErr:     false,
 		},
 		{
-			name: "many points, 0_0",
+			name: "900 points, -90_-180",
 			fields: fields{
 				es: makeTestPolys(30, 30),
 			},
 			args: args{
-				c: MakeCoordinates(0, 0),
+				c: MakeCoordinates(-90, -180),
 			},
-			wantMatches: []string{"0_0"},
+			wantMatches: []string{"-90.000000_-180.000000"},
 			wantErr:     false,
 		},
 		{
-			name: "many points, 28_17",
+			name: "900 points, -84_-168 (bordered)",
 			fields: fields{
 				es: makeTestPolys(30, 30),
 			},
 			args: args{
-				c: MakeCoordinates(28.5, 17.5),
+				c: MakeCoordinates(-84, -168),
 			},
-			wantMatches: []string{"28_17"},
+			wantMatches: []string{"-90.000000_-180.000000", "-84.000000_-168.000000"},
 			wantErr:     false,
 		},
 		{
-			name: "many points, 28_17 (bordered)",
-			fields: fields{
-				es: makeTestPolys(30, 30),
-			},
-			args: args{
-				c: MakeCoordinates(28, 17),
-			},
-			wantMatches: []string{"27_16", "27_17", "28_16", "28_17"},
-			wantErr:     false,
-		},
-		{
-			name: "many points, 98_98 (bordered)",
+			name: "10_000 points, -90_-180",
 			fields: fields{
 				es: makeTestPolys(100, 100),
 			},
 			args: args{
-				c: MakeCoordinates(98, 98),
+				c: MakeCoordinates(-90, -180),
 			},
-			wantMatches: []string{"98_97", "98_98", "97_97", "97_98"},
+			wantMatches: []string{"-90.000000_-180.000000"},
 			wantErr:     false,
 		},
 		{
-			name: "many points, 0_0 (bordered)",
+			name: "10_000 points, -89_-177 (bordered)",
 			fields: fields{
 				es: makeTestPolys(100, 100),
 			},
 			args: args{
-				c: MakeCoordinates(0, 0),
+				c: MakeCoordinates(-89, -177),
 			},
-			wantMatches: []string{"0_0"},
+			wantMatches: []string{"-90.000000_-180.000000", "-89.000000_-177.000000"},
+			wantErr:     false,
+		},
+		{
+			name: "100_000 points, -90.000000_-180.000000",
+			fields: fields{
+				es: makeTestPolys(1000, 100),
+			},
+			args: args{
+				c: MakeCoordinates(-90, -180),
+			},
+			wantMatches: []string{"-90.000000_-180.000000"},
+			wantErr:     false,
+		},
+		{
+			name: "100_000 points, -89_-177 (bordered)",
+			fields: fields{
+				es: makeTestPolys(1000, 100),
+			},
+			args: args{
+				c: MakeCoordinates(-90, -177),
+			},
+			wantMatches: []string{"-90.000000_-180.000000", "-90.000000_-177.000000"},
 			wantErr:     false,
 		},
 	}
@@ -261,9 +274,9 @@ func TestGeoDB_GetMatches(t *testing.T) {
 					t.Fatalf("No matches for %s", e.key)
 				}
 
-				match := ms[0]
-				if match != e.key {
-					t.Fatalf("Invalid match, want %s and received %s", e.key, match)
+				set := stringset.MakeMap(ms...)
+				if !set.Has(e.key) {
+					t.Fatalf("Invalid match, want to contain %s and received %s", e.key, ms)
 				}
 			}
 
@@ -276,17 +289,28 @@ func TestGeoDB_GetMatches(t *testing.T) {
 }
 
 func makeTestPolys(rows, columns int) (out []*entry) {
+	minLat := -90
+	maxLat := 90
+	minLon := -180
+	maxLon := 180
+	latPerEntry := Degree((maxLat - minLat) / rows)
+	lonPerEntry := Degree((maxLon - minLon) / columns)
+
+	curLat := Degree(minLat)
+	curLon := Degree(minLon)
 	for i := 0; i < rows; i++ {
 		for j := 0; j < columns; j++ {
 			var e entry
-			e.key = fmt.Sprintf("%d_%d", i, j)
+			e.key = fmt.Sprintf("%f_%f", curLat, curLon)
 			e.shape, _ = NewPolygon([]Coordinates{
-				MakeCoordinates(Degree(i), Degree(j)),
-				MakeCoordinates(Degree(i), Degree(j+1)),
-				MakeCoordinates(Degree(i+1), Degree(j+1)),
-				MakeCoordinates(Degree(i+1), Degree(j)),
+				MakeCoordinates(curLat, curLon),
+				MakeCoordinates(curLat, curLon+lonPerEntry),
+				MakeCoordinates(curLat+latPerEntry, curLon+lonPerEntry),
+				MakeCoordinates(curLat+latPerEntry, curLon),
 			})
 
+			curLat += latPerEntry
+			curLon += lonPerEntry
 			out = append(out, &e)
 		}
 	}
@@ -428,6 +452,10 @@ func TestGeoDB_Len(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := New()
+			for _, e := range tt.fields.es {
+				g.Insert(e.key, e.shape)
+			}
+
 			gotN := g.Len()
 			if gotN != tt.wantN {
 				t.Errorf("GeoDB.EntriesLen() = %v, want %v", gotN, tt.wantN)
