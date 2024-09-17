@@ -41,6 +41,20 @@ func (p *Polygon) Rect() Rect {
 	return p.rect
 }
 
+func (p *Polygon) Radius() (radius Meter) {
+	r := p.rect
+	c := r.Center()
+	for _, point := range p.border {
+		loc := point.Location()
+		distance := loc.Distance(c)
+		if distance > radius {
+			radius = distance
+		}
+	}
+
+	return
+}
+
 func (p *Polygon) setRect() {
 	for _, coords := range p.border {
 		p.rect.SetCoords(coords)
