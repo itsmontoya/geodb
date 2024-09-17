@@ -14,5 +14,6 @@ func (t *trunk) Split() (out []node) {
 	if t.state < branchChildrenHasBranches {
 		t.state++
 	}
+
 	return
 }

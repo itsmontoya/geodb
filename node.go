@@ -2,6 +2,7 @@ package geodb
 
 type node interface {
 	Insert(value)
+	Append(node)
 	Rect() Rect
 	Len() int
 	Split() []node

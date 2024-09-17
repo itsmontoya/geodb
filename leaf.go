@@ -9,6 +9,10 @@ type leaf struct {
 	entries []*entry
 }
 
+func (l *leaf) Append(n node) {
+	l.Insert(n)
+}
+
 func (l *leaf) Insert(v value) {
 	e, ok := v.(*entry)
 	if !ok {
