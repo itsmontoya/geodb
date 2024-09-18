@@ -46,19 +46,21 @@ func (r *Rect) SetCoords(in Coordinates) {
 }
 
 func (r *Rect) SetLat(lat Degree) {
-	switch {
-	case lat > r.Max.Latitude:
+	if lat > r.Max.Latitude {
 		r.Max.Latitude = lat
-	case lat < r.Min.Latitude:
+	}
+
+	if lat < r.Min.Latitude {
 		r.Min.Latitude = lat
 	}
 }
 
 func (r *Rect) SetLon(lon Degree) {
-	switch {
-	case lon > r.Max.Longitude:
+	if lon > r.Max.Longitude {
 		r.Max.Longitude = lon
-	case lon < r.Min.Longitude:
+	}
+
+	if lon < r.Min.Longitude {
 		r.Min.Longitude = lon
 	}
 }
@@ -112,9 +114,37 @@ func (r *Rect) GetMatchingNode(ns ...node) (match node, ok bool) {
 		}
 	}
 
-	for _, n := range ns {
-		if !n.DoesNotOverlap(r) {
-			return n, true
+	var index int
+	if match, index = r.GetClosestNode(ns...); index == -1 {
+		return
+	}
+
+	ok = true
+	return
+}
+
+func (r *Rect) GetClosestNode(ns ...node) (match node, index int) {
+	var (
+		distance Meter
+		isSet    bool
+	)
+
+	if len(ns) == 0 {
+		index = -1
+		return
+	}
+
+	c := r.Center()
+	for i, n := range ns {
+		r := n.Rect()
+		rc := r.Center()
+		m := c.Distance(rc)
+
+		if !isSet || m < distance {
+			match = n
+			index = i
+			distance = m
+			isSet = true
 		}
 	}
 
@@ -148,21 +178,6 @@ func (r *Rect) IsFullyContained(in *Rect) (contained bool) {
 		return false
 	default:
 		return true
-	}
-}
-
-func (r *Rect) DoesNotOverlap(in *Rect) (notContained bool) {
-	switch {
-	case in.Min.Latitude > r.Max.Latitude:
-		return true
-	case in.Max.Latitude < r.Min.Latitude:
-		return true
-	case in.Min.Longitude > r.Max.Longitude:
-		return true
-	case in.Max.Longitude < r.Min.Longitude:
-		return true
-	default:
-		return false
 	}
 }
 
