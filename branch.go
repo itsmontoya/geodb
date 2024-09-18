@@ -71,10 +71,6 @@ func (b *branch) IsFullyContained(r *Rect) (contained bool) {
 	return b.rect.IsFullyContained(r)
 }
 
-func (b *branch) DoesNotOverlap(r *Rect) (notOverlapping bool) {
-	return b.rect.DoesNotOverlap(r)
-}
-
 func (b *branch) getMatch(rect *Rect) (match node, index int) {
 	if len(b.nodes) == 0 {
 		var l leaf

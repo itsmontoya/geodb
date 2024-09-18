@@ -181,21 +181,6 @@ func (r *Rect) IsFullyContained(in *Rect) (contained bool) {
 	}
 }
 
-func (r *Rect) DoesNotOverlap(in *Rect) (notContained bool) {
-	switch {
-	case in.Min.Latitude > r.Max.Latitude:
-		return true
-	case in.Max.Latitude < r.Min.Latitude:
-		return true
-	case in.Min.Longitude > r.Max.Longitude:
-		return true
-	case in.Max.Longitude < r.Min.Longitude:
-		return true
-	default:
-		return false
-	}
-}
-
 func (r *Rect) centerLat() (lat Radian) {
 	center := ((r.Min.Latitude + r.Max.Latitude) / 2.0)
 	return center.toRadians()

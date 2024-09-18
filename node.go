@@ -7,7 +7,6 @@ type node interface {
 	Len() int
 	Split() []node
 	IsFullyContained(*Rect) bool
-	DoesNotOverlap(*Rect) bool
 	AppendMatches([]*entry, Coordinates) []*entry
 }
 

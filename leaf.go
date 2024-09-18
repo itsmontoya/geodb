@@ -60,10 +60,6 @@ func (l *leaf) IsFullyContained(r *Rect) (contained bool) {
 	return l.rect.IsFullyContained(r)
 }
 
-func (l *leaf) DoesNotOverlap(r *Rect) (notOverlapping bool) {
-	return l.rect.DoesNotOverlap(r)
-}
-
 func (l *leaf) AppendMatches(in []*entry, c Coordinates) (out []*entry) {
 	out = in
 	if !l.ContainsCoordinates(c) {
