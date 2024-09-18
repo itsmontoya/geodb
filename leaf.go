@@ -31,7 +31,7 @@ func (l *leaf) Split() (out []node) {
 		sr := e.shape.Rect()
 		node, ok := sr.GetMatchingNode(&l1, &l2)
 		if !ok {
-			msg := fmt.Sprintf("no split match found for %+v", sr)
+			msg := fmt.Sprintf("leaf.Split(): no split match found for %+v within %v / %v, orig: %v", sr, l1.rect, l2.rect, l.rect)
 			panic(msg)
 		}
 
