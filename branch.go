@@ -42,7 +42,7 @@ func (b *branch) Split() (out []node) {
 		nr := n.Rect()
 		node, ok := nr.GetMatchingNode(&b1, &b2)
 		if !ok {
-			msg := fmt.Sprintf("no split match found for %+v", nr)
+			msg := fmt.Sprintf("branch.Split(): no split match found for %+v within %+v / %+v, orig: %+v", nr, b1.rect, b2.rect, b.rect)
 			panic(msg)
 		}
 
@@ -63,33 +63,6 @@ func (b *branch) AppendMatches(in []*entry, c Coordinates) (out []*entry) {
 	return
 }
 
-func (b *branch) getMatch(rect *Rect) (match node, index int) {
-	var (
-		distance Meter
-		isSet    bool
-	)
-
-	if len(b.nodes) == 0 {
-		var l leaf
-		b.nodes = append(b.nodes, &l)
-	}
-
-	c := rect.Center()
-	for i, n := range b.nodes {
-		r := n.Rect()
-		rc := r.Center()
-		m := c.Distance(rc)
-		if !isSet || m < distance {
-			match = n
-			index = i
-			distance = m
-			isSet = true
-		}
-	}
-
-	return
-}
-
 func (b *branch) Rect() (r Rect) {
 	return b.rect
 }
@@ -100,4 +73,13 @@ func (b *branch) IsFullyContained(r *Rect) (contained bool) {
 
 func (b *branch) DoesNotOverlap(r *Rect) (notOverlapping bool) {
 	return b.rect.DoesNotOverlap(r)
+}
+
+func (b *branch) getMatch(rect *Rect) (match node, index int) {
+	if len(b.nodes) == 0 {
+		var l leaf
+		b.nodes = append(b.nodes, &l)
+	}
+
+	return rect.GetClosestNode(b.nodes...)
 }
